@@ -14,7 +14,7 @@ az login
 ### Create Resource Group
 
 ```bash
-az group create --name urlshortener-dev --location westeurope
+az group create --name urlshortener-dev --location canada central
 ```
 
 ### Deploy Bicep
@@ -34,7 +34,7 @@ az deployment group create --resource-group urlshortener-dev --template-file inf
 ```bash
 az ad sp create-for-rbac --name "GitHub-Actions-SP" \
                          --role contributor \
-                         --scopes /subscriptions/89518450-6f9c-4039-8834-c5bab3ad3e92 \
+                         --scopes /subscriptions/{yourSubId} \
                          --sdk-auth
 ```
 
