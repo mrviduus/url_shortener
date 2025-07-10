@@ -1,37 +1,31 @@
 param location string = resourceGroup().location
-param appServicePlanName string
-param appName string
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
-  kind: 'linux'
-  location: location
-  name: appServicePlanName
-  properties: {
-    reserved: true
-  }
-  sku: {
-    name: 'B1'
+var uniqueId = uniqueString(resourceGroup().id)
+
+module keyVault 'modules/secrets/keyvault.bicep' = {
+  name: 'keyVaultDeployment'
+  params: {
+    vaultName: 'kv-${uniqueId}'
+    location: location
   }
 }
 
-resource webApp 'Microsoft.Web/sites@2023-12-01' = {
-  name: appName
-  location: location
-  properties: {
-    serverFarmId: appServicePlan.id
-    httpsOnly: true
-    siteConfig: {
-      linuxFxVersion: 'DOTNETCORE|9.0'
-    }
+module apiService 'modules/compute/appservice.bicep' = {
+  name: 'apiDeployment'
+  params: {
+    appName: 'api-${uniqueId}'
+    appServicePlanName: 'plan-api-${uniqueId}'
+    location: location
   }
 }
 
-resource webAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
-  parent: webApp
-  name: 'web'
-  properties: {
-    scmType: 'GitHub'
+module keyVaultRoleAssignment 'modules/secrets/key-vault-role-assignment.bicep' = {
+  name: 'keyVaultRoleAssignmentDeployment'
+  params: {
+    keyVaultName: keyVault.outputs.name
+    principalIds: [
+      apiService.outputs.principalId
+      // Add more principal IDs as needed
+    ]
   }
 }
-
-output appServiceId string = webApp.id
