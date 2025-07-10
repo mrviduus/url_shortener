@@ -45,15 +45,20 @@ jobs:
         scope: resourcegroup
         resourceGroupName: ${{ vars.RESOURCE_GROUP_NAME }}
         template: ./infrastructure/main.bicep
+        deploymentName: main-deployment-${{ github.run_number }}
 
     - name: Assign Key Vault Permissions
       uses: Azure/CLI@v2
       with:
         inlineScript: |
           #!/bin/bash
-          # Get deployment outputs
-          KEY_VAULT_NAME=$(az deployment group show --name ${{ steps.deploy.outputs.deploymentName }} --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.keyVaultName.value' -o tsv)
-          PRINCIPAL_ID=$(az deployment group show --name ${{ steps.deploy.outputs.deploymentName }} --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.appServicePrincipalId.value' -o tsv)
+          # Get deployment outputs using the deployment name
+          DEPLOYMENT_NAME="main-deployment-${{ github.run_number }}"
+          KEY_VAULT_NAME=$(az deployment group show --name $DEPLOYMENT_NAME --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.keyVaultName.value' -o tsv)
+          PRINCIPAL_ID=$(az deployment group show --name $DEPLOYMENT_NAME --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.appServicePrincipalId.value' -o tsv)
+          
+          echo "Key Vault Name: $KEY_VAULT_NAME"
+          echo "Principal ID: $PRINCIPAL_ID"
           
           # Assign Key Vault Secrets User role
           az role assignment create \
@@ -91,15 +96,20 @@ jobs:
           scope: resourcegroup
           resourceGroupName: ${{ vars.RESOURCE_GROUP_NAME }}
           template: ./infrastructure/main.bicep
+          deploymentName: main-deployment-stg-${{ github.run_number }}
 
       - name: Assign Key Vault Permissions
         uses: Azure/CLI@v2
         with:
           inlineScript: |
             #!/bin/bash
-            # Get deployment outputs
-            KEY_VAULT_NAME=$(az deployment group show --name ${{ steps.deploy.outputs.deploymentName }} --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.keyVaultName.value' -o tsv)
-            PRINCIPAL_ID=$(az deployment group show --name ${{ steps.deploy.outputs.deploymentName }} --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.appServicePrincipalId.value' -o tsv)
+            # Get deployment outputs using the deployment name
+            DEPLOYMENT_NAME="main-deployment-stg-${{ github.run_number }}"
+            KEY_VAULT_NAME=$(az deployment group show --name $DEPLOYMENT_NAME --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.keyVaultName.value' -o tsv)
+            PRINCIPAL_ID=$(az deployment group show --name $DEPLOYMENT_NAME --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.appServicePrincipalId.value' -o tsv)
+            
+            echo "Key Vault Name: $KEY_VAULT_NAME"
+            echo "Principal ID: $PRINCIPAL_ID"
             
             # Assign Key Vault Secrets User role
             az role assignment create \
@@ -139,15 +149,20 @@ jobs:
           scope: resourcegroup
           resourceGroupName: ${{ vars.RESOURCE_GROUP_NAME }}
           template: ./infrastructure/main.bicep
+          deploymentName: main-deployment-prd-${{ github.run_number }}
 
       - name: Assign Key Vault Permissions
         uses: Azure/CLI@v2
         with:
           inlineScript: |
             #!/bin/bash
-            # Get deployment outputs
-            KEY_VAULT_NAME=$(az deployment group show --name ${{ steps.deploy.outputs.deploymentName }} --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.keyVaultName.value' -o tsv)
-            PRINCIPAL_ID=$(az deployment group show --name ${{ steps.deploy.outputs.deploymentName }} --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.appServicePrincipalId.value' -o tsv)
+            # Get deployment outputs using the deployment name
+            DEPLOYMENT_NAME="main-deployment-prd-${{ github.run_number }}"
+            KEY_VAULT_NAME=$(az deployment group show --name $DEPLOYMENT_NAME --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.keyVaultName.value' -o tsv)
+            PRINCIPAL_ID=$(az deployment group show --name $DEPLOYMENT_NAME --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.appServicePrincipalId.value' -o tsv)
+            
+            echo "Key Vault Name: $KEY_VAULT_NAME"
+            echo "Principal ID: $PRINCIPAL_ID"
             
             # Assign Key Vault Secrets User role
             az role assignment create \
