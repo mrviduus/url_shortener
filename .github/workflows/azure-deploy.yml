@@ -39,11 +39,29 @@ jobs:
           echo "Azure resource group created"
 
     - name: Deploy  
+      id: deploy
       uses: azure/arm-deploy@v2
       with:
         scope: resourcegroup
         resourceGroupName: ${{ vars.RESOURCE_GROUP_NAME }}
         template: ./infrastructure/main.bicep
+
+    - name: Assign Key Vault Permissions
+      uses: Azure/CLI@v2
+      with:
+        inlineScript: |
+          #!/bin/bash
+          # Get deployment outputs
+          KEY_VAULT_NAME=$(az deployment group show --name ${{ steps.deploy.outputs.deploymentName }} --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.keyVaultName.value' -o tsv)
+          PRINCIPAL_ID=$(az deployment group show --name ${{ steps.deploy.outputs.deploymentName }} --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.appServicePrincipalId.value' -o tsv)
+          
+          # Assign Key Vault Secrets User role
+          az role assignment create \
+            --assignee $PRINCIPAL_ID \
+            --role "Key Vault Secrets User" \
+            --scope "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.RESOURCE_GROUP_NAME }}/providers/Microsoft.KeyVault/vaults/$KEY_VAULT_NAME"
+          
+          echo "Key Vault permissions assigned successfully"
 
  deploy-stg:
     runs-on: ubuntu-latest
@@ -67,11 +85,29 @@ jobs:
             echo "Azure resource group created"
   
       - name: Deploy  
+        id: deploy
         uses: azure/arm-deploy@v2
         with:
           scope: resourcegroup
           resourceGroupName: ${{ vars.RESOURCE_GROUP_NAME }}
           template: ./infrastructure/main.bicep
+
+      - name: Assign Key Vault Permissions
+        uses: Azure/CLI@v2
+        with:
+          inlineScript: |
+            #!/bin/bash
+            # Get deployment outputs
+            KEY_VAULT_NAME=$(az deployment group show --name ${{ steps.deploy.outputs.deploymentName }} --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.keyVaultName.value' -o tsv)
+            PRINCIPAL_ID=$(az deployment group show --name ${{ steps.deploy.outputs.deploymentName }} --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.appServicePrincipalId.value' -o tsv)
+            
+            # Assign Key Vault Secrets User role
+            az role assignment create \
+              --assignee $PRINCIPAL_ID \
+              --role "Key Vault Secrets User" \
+              --scope "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.RESOURCE_GROUP_NAME }}/providers/Microsoft.KeyVault/vaults/$KEY_VAULT_NAME"
+            
+            echo "Key Vault permissions assigned successfully"
 
 
  deploy-prd:
@@ -97,8 +133,26 @@ jobs:
             echo "Azure resource group created"
   
       - name: Deploy  
+        id: deploy
         uses: azure/arm-deploy@v2
         with:
           scope: resourcegroup
           resourceGroupName: ${{ vars.RESOURCE_GROUP_NAME }}
           template: ./infrastructure/main.bicep
+
+      - name: Assign Key Vault Permissions
+        uses: Azure/CLI@v2
+        with:
+          inlineScript: |
+            #!/bin/bash
+            # Get deployment outputs
+            KEY_VAULT_NAME=$(az deployment group show --name ${{ steps.deploy.outputs.deploymentName }} --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.keyVaultName.value' -o tsv)
+            PRINCIPAL_ID=$(az deployment group show --name ${{ steps.deploy.outputs.deploymentName }} --resource-group ${{ vars.RESOURCE_GROUP_NAME }} --query 'properties.outputs.appServicePrincipalId.value' -o tsv)
+            
+            # Assign Key Vault Secrets User role
+            az role assignment create \
+              --assignee $PRINCIPAL_ID \
+              --role "Key Vault Secrets User" \
+              --scope "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ vars.RESOURCE_GROUP_NAME }}/providers/Microsoft.KeyVault/vaults/$KEY_VAULT_NAME"
+            
+            echo "Key Vault permissions assigned successfully"
